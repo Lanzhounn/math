@@ -1,4 +1,3 @@
-
 // === Показ и скрытие ответов для задач ===
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll(".show-answer");
@@ -11,51 +10,96 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// === Проверка одного ответа ===
-// Пример HTML:
+// === Универсальная проверка ответа (для всех тем) ===
+// Используй в HTML так:
 // <input id="a1" type="number">
 // <button onclick="checkAnswer('a1', 12)">Проверить</button>
 // <span id="r_a1"></span>
+
 function checkAnswer(id, correct) {
   const input = document.getElementById(id);
   const result = document.getElementById("r_" + id);
   if (!input || !result) return;
 
   const user = parseFloat(input.value);
-  if (user === correct) {
-    result.textContent = "✅ Верно!";
+
+  if (isNaN(user)) {
+    result.textContent = "💡 Введите число, пожалуйста!";
+    result.style.color = "#c00";
+    return;
+  }
+
+  if (Math.abs(user - correct) < 0.0001) {
+    result.textContent = "✅ Верно! Отличная работа!";
+    result.style.color = "green";
   } else {
-    result.textContent = "❌ Попробуй ещё раз";
+    result.textContent = `❌ Неверно. Попробуй ещё раз 😉`;
+    result.style.color = "red";
   }
 }
 
-// аккордеон КОМБИНАТОРИКА
-document.querySelectorAll(".accordion").forEach(btn=>{
-  btn.addEventListener("click",()=>{
+// === Аккордеоны для каждой темы (разделы: Уравнения, Комбинаторика и т.д.) ===
+document.querySelectorAll(".accordion").forEach(btn => {
+  btn.addEventListener("click", () => {
     btn.classList.toggle("active");
-    const panel=btn.nextElementSibling;
-    panel.style.display = panel.style.display==="block"?"none":"block";
+    const panel = btn.nextElementSibling;
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
   });
 });
 
-// проверка мини-теста по комбинаторике
-function checkTest2(){
-  const answers={q1:24,q2:10,q3:24,q4:6,q5:6};
-  const form=document.getElementById("test-form2");
-  let score=0;
-  for(let key in answers){
-    const inp=form.elements[key];
-    if(!inp) continue;
-    const user=parseFloat(inp.value);
-    let fb=document.getElementById("r_"+key+"_2");
-    if(!fb){
-      fb=document.createElement("span");
-      fb.id="r_"+key+"_2";
-      inp.insertAdjacentElement("afterend",fb);
+// === Универсальная функция проверки мини-тестов ===
+// Позволяет быстро добавлять новые тесты, просто указав ID формы и ответы
+function checkTest(formId, answers) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  let score = 0;
+  const total = Object.keys(answers).length;
+
+  for (let key in answers) {
+    const inp = form.elements[key];
+    if (!inp) continue;
+
+    const user = parseFloat(inp.value);
+    let fb = document.getElementById(`r_${key}_${formId}`);
+    if (!fb) {
+      fb = document.createElement("span");
+      fb.id = `r_${key}_${formId}`;
+      inp.insertAdjacentElement("afterend", fb);
     }
-    fb.textContent = user===answers[key] ? " ✅ Верно!" : " ❌ Попробуй ещё раз";
-    if(user===answers[key]) score++;
+
+    if (isNaN(user)) {
+      fb.textContent = "💬 Введите ответ";
+      fb.style.color = "#c00";
+      continue;
+    }
+
+    if (Math.abs(user - answers[key]) < 0.0001) {
+      fb.textContent = " ✅ Верно!";
+      fb.style.color = "green";
+      score++;
+    } else {
+      fb.textContent = " ❌ Неверно, попробуй ещё раз";
+      fb.style.color = "red";
+    }
   }
-  document.getElementById("result2").textContent=
-    `Правильных ответов: ${score} из ${Object.keys(answers).length}`;
+
+  // Отображение общего результата
+  const resultBlock = document.getElementById(`result_${formId}`);
+  if (resultBlock) {
+    resultBlock.textContent = `Правильных ответов: ${score} из ${total}`;
+  }
 }
+
+// === Пример вызова мини-теста для Комбинаторики ===
+// (Ты можешь добавлять другие темы, просто копируя структуру)
+function checkTest2() {
+  const answers = { q1: 24, q2: 10, q3: 24, q4: 6, q5: 6 };
+  checkTest("test-form2", answers);
+}
+
+/* 
+📸 Место для картинки:
+Если хочешь визуально показать пример (например, схему перестановок или таблицу сочетаний) —
+вставь её в HTML здесь и просто убери этот комментарий.
+*/
